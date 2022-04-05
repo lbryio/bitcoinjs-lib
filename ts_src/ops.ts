@@ -121,9 +121,13 @@ const OPS: { [key: string]: number } = {
 
   OP_NOP4: 179,
   OP_NOP5: 180,
-  OP_NOP6: 181,
-  OP_NOP7: 182,
-  OP_NOP8: 183,
+
+  // LBRY custom opcodes: tx types
+  // Replaces OP_NOP6 - OP_NOP8
+  OP_CLAIM_NAME: 181,
+  OP_SUPPORT_CLAIM: 182,
+  OP_UPDATE_CLAIM: 183,
+
   OP_NOP9: 184,
   OP_NOP10: 185,
 

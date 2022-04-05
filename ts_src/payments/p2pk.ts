@@ -1,9 +1,13 @@
-import { bitcoin as BITCOIN_NETWORK } from '../networks';
+import { mainnet as LBRY_MAINNET } from '../networks';
 import * as bscript from '../script';
 import { isPoint, typeforce as typef } from '../types';
 import { Payment, PaymentOpts, StackFunction } from './index';
 import * as lazy from './lazy';
 const OPS = bscript.OPS;
+
+// NOTE We don't use this type of scriptPubKey (p2pk) for LBRY. Presumably
+// because it stopped being used in Bitcoin before LBRY was created.
+// TODO delete this file? and maybe others?
 
 // input: {signature}
 // output: {pubKey} OP_CHECKSIG
@@ -28,7 +32,7 @@ export function p2pk(a: Payment, opts?: PaymentOpts): Payment {
     return bscript.decompile(a.input!);
   }) as StackFunction;
 
-  const network = a.network || BITCOIN_NETWORK;
+  const network = a.network || LBRY_MAINNET;
   const o: Payment = { name: 'p2pk', network };
 
   lazy.prop(o, 'output', () => {

@@ -6,6 +6,9 @@ const bscript = require('../script');
 const types_1 = require('../types');
 const lazy = require('./lazy');
 const OPS = bscript.OPS;
+// NOTE We don't use this type of scriptPubKey (p2pk) for LBRY. Presumably
+// because it stopped being used in Bitcoin before LBRY was created.
+// TODO delete this file? and maybe others?
 // input: {signature}
 // output: {pubKey} OP_CHECKSIG
 function p2pk(a, opts) {
@@ -25,7 +28,7 @@ function p2pk(a, opts) {
   const _chunks = lazy.value(() => {
     return bscript.decompile(a.input);
   });
-  const network = a.network || networks_1.bitcoin;
+  const network = a.network || networks_1.mainnet;
   const o = { name: 'p2pk', network };
   lazy.prop(o, 'output', () => {
     if (!a.pubkey) return;

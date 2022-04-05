@@ -41,7 +41,7 @@ function p2wpkh(a, opts) {
       data: Buffer.from(data),
     };
   });
-  const network = a.network || networks_1.bitcoin;
+  const network = a.network || networks_1.mainnet;
   const o = { name: 'p2wpkh', network };
   lazy.prop(o, 'address', () => {
     if (!o.hash) return;

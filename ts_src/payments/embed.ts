@@ -1,4 +1,4 @@
-import { bitcoin as BITCOIN_NETWORK } from '../networks';
+import { mainnet as LBRY_MAINNET } from '../networks';
 import * as bscript from '../script';
 import { typeforce as typef } from '../types';
 import { Payment, PaymentOpts, Stack } from './index';
@@ -28,7 +28,7 @@ export function p2data(a: Payment, opts?: PaymentOpts): Payment {
     a,
   );
 
-  const network = a.network || BITCOIN_NETWORK;
+  const network = a.network || LBRY_MAINNET;
   const o = { name: 'embed', network } as Payment;
 
   lazy.prop(o, 'output', () => {

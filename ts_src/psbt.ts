@@ -16,7 +16,7 @@ import { checkForInput, checkForOutput } from 'bip174/src/lib/utils';
 import { fromOutputScript, toOutputScript } from './address';
 import { cloneBuffer, reverseBuffer } from './bufferutils';
 import { hash160 } from './crypto';
-import { bitcoin as btcNetwork, Network } from './networks';
+import { mainnet as lbryMainnet, Network } from './networks';
 import * as payments from './payments';
 import * as bscript from './script';
 import { Output, Transaction } from './transaction';
@@ -55,7 +55,7 @@ const DEFAULT_OPTS: PsbtOpts = {
    * A bitcoinjs Network object. This is only used if you pass an `address`
    * parameter to addOutput. Otherwise it is not needed and can be left default.
    */
-  network: btcNetwork,
+  network: lbryMainnet,
   /**
    * When extractTransaction is called, the fee rate is checked.
    * THIS IS NOT TO BE RELIED ON.
@@ -899,6 +899,7 @@ function canFinalize(
     case 'pubkey':
     case 'pubkeyhash':
     case 'witnesspubkeyhash':
+    case 'claimname':
       return hasSigs(1, input.partialSig);
     case 'multisig':
       const p2ms = payments.p2ms({ output: script });
@@ -955,6 +956,7 @@ const isP2PKH = isPaymentFactory(payments.p2pkh);
 const isP2WPKH = isPaymentFactory(payments.p2wpkh);
 const isP2WSHScript = isPaymentFactory(payments.p2wsh);
 const isP2SHScript = isPaymentFactory(payments.p2sh);
+const isClaimName = isPaymentFactory(payments.claimName);
 
 function bip32DerivationIsMine(
   root: HDSigner,
@@ -1374,6 +1376,13 @@ function getPayment(
       break;
     case 'witnesspubkeyhash':
       payment = payments.p2wpkh({
+        output: script,
+        pubkey: partialSig[0].pubkey,
+        signature: partialSig[0].signature,
+      });
+      break;
+    case 'claimname':
+      payment = payments.claimName({
         output: script,
         pubkey: partialSig[0].pubkey,
         signature: partialSig[0].signature,
@@ -1844,12 +1853,14 @@ type ScriptType =
   | 'pubkeyhash'
   | 'multisig'
   | 'pubkey'
+  | 'claimname'
   | 'nonstandard';
 function classifyScript(script: Buffer): ScriptType {
   if (isP2WPKH(script)) return 'witnesspubkeyhash';
   if (isP2PKH(script)) return 'pubkeyhash';
   if (isP2MS(script)) return 'multisig';
   if (isP2PK(script)) return 'pubkey';
+  if (isClaimName(script)) return 'claimname';
   return 'nonstandard';
 }
 

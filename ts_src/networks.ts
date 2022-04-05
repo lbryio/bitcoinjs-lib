@@ -14,36 +14,36 @@ interface Bip32 {
   private: number;
 }
 
-export const bitcoin: Network = {
-  messagePrefix: '\x18Bitcoin Signed Message:\n',
-  bech32: 'bc',
+export const mainnet: Network = {
+  messagePrefix: '\x18Bitcoin Signed Message:\n', // ?
+  bech32: 'bech32', // TODO is this right?! BECH32_ADDRESS lbry/wallet/orchstr8/node.py?
   bip32: {
-    public: 0x0488b21e,
-    private: 0x0488ade4,
+    public: 0x0488b21e, // lbry/wallet/server/coin.py XPUB_VERBYTES (unchanged)
+    private: 0x0488ade4, // lbry/wallet/server/coin.py XPRV_VERBYTES (unchanged)
   },
-  pubKeyHash: 0x00,
-  scriptHash: 0x05,
-  wif: 0x80,
+  pubKeyHash: 0x55, // lbry/wallet/server/coin.py P2PKH_VERBYTE
+  scriptHash: 0x7a, // lbry/wallet/server/coin.py P2SH_VERBYTES
+  wif: 0x1c, // lbry/wallet/server/coin.py WIF_BYTE
 };
 export const regtest: Network = {
   messagePrefix: '\x18Bitcoin Signed Message:\n',
-  bech32: 'bcrt',
+  bech32: 'bech32', // TODO is this right?! BECH32_ADDRESS lbry/wallet/orchstr8/node.py?
   bip32: {
-    public: 0x043587cf,
-    private: 0x04358394,
+    public: 0x043587cf, // lbry/wallet/server/coin.py XPUB_VERBYTES (unchanged)
+    private: 0x04358394, // lbry/wallet/server/coin.py XPRV_VERBYTES (unchanged)
   },
-  pubKeyHash: 0x6f,
-  scriptHash: 0xc4,
-  wif: 0xef,
+  pubKeyHash: 0x6f, // lbry/wallet/server/coin.py P2PKH_VERBYTE (unchanged)
+  scriptHash: 0xc4, // lbry/wallet/server/coin.py P2SH_VERBYTES (unchanged)
+  wif: 0x1c, // lbry/wallet/server/coin.py WIF_BYTE
 };
 export const testnet: Network = {
   messagePrefix: '\x18Bitcoin Signed Message:\n',
-  bech32: 'tb',
+  bech32: 'bech32', // TODO is this right?! BECH32_ADDRESS lbry/wallet/orchstr8/node.py?
   bip32: {
-    public: 0x043587cf,
-    private: 0x04358394,
+    public: 0x043587cf, // lbry/wallet/server/coin.py XPUB_VERBYTES (unchanged)
+    private: 0x04358394, // lbry/wallet/server/coin.py XPRV_VERBYTES (unchanged)
   },
-  pubKeyHash: 0x6f,
-  scriptHash: 0xc4,
-  wif: 0xef,
+  pubKeyHash: 0x6f, // lbry/wallet/server/coin.py P2PKH_VERBYTE (unchanged)
+  scriptHash: 0xc4, // lbry/wallet/server/coin.py P2SH_VERBYTES (unchanged)
+  wif: 0x1c, // lbry/wallet/server/coin.py WIF_BYTE
 };

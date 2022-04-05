@@ -19,7 +19,7 @@ const DEFAULT_OPTS = {
    * A bitcoinjs Network object. This is only used if you pass an `address`
    * parameter to addOutput. Otherwise it is not needed and can be left default.
    */
-  network: networks_1.bitcoin,
+  network: networks_1.mainnet,
   /**
    * When extractTransaction is called, the fee rate is checked.
    * THIS IS NOT TO BE RELIED ON.
@@ -671,6 +671,7 @@ function canFinalize(input, script, scriptType) {
     case 'pubkey':
     case 'pubkeyhash':
     case 'witnesspubkeyhash':
+    case 'claimname':
       return hasSigs(1, input.partialSig);
     case 'multisig':
       const p2ms = payments.p2ms({ output: script });
@@ -719,6 +720,7 @@ const isP2PKH = isPaymentFactory(payments.p2pkh);
 const isP2WPKH = isPaymentFactory(payments.p2wpkh);
 const isP2WSHScript = isPaymentFactory(payments.p2wsh);
 const isP2SHScript = isPaymentFactory(payments.p2sh);
+const isClaimName = isPaymentFactory(payments.claimName);
 function bip32DerivationIsMine(root) {
   return d => {
     if (!d.masterFingerprint.equals(root.fingerprint)) return false;
@@ -1045,6 +1047,13 @@ function getPayment(script, scriptType, partialSig) {
       break;
     case 'witnesspubkeyhash':
       payment = payments.p2wpkh({
+        output: script,
+        pubkey: partialSig[0].pubkey,
+        signature: partialSig[0].signature,
+      });
+      break;
+    case 'claimname':
+      payment = payments.claimName({
         output: script,
         pubkey: partialSig[0].pubkey,
         signature: partialSig[0].signature,
@@ -1404,6 +1413,7 @@ function classifyScript(script) {
   if (isP2PKH(script)) return 'pubkeyhash';
   if (isP2MS(script)) return 'multisig';
   if (isP2PK(script)) return 'pubkey';
+  if (isClaimName(script)) return 'claimname';
   return 'nonstandard';
 }
 function range(n) {

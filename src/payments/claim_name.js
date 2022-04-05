@@ -1,6 +1,7 @@
 'use strict';
+// This is mostly a copy of p2pkh, as the usual claim name script is based on that
 Object.defineProperty(exports, '__esModule', { value: true });
-exports.p2pkh = void 0;
+exports.claimName = void 0;
 const bcrypto = require('../crypto');
 const networks_1 = require('../networks');
 const bscript = require('../script');
@@ -9,9 +10,17 @@ const lazy = require('./lazy');
 const bs58check = require('bs58check');
 const OPS = bscript.OPS;
 // input: {signature} {pubkey}
-// output: OP_DUP OP_HASH160 {hash160(pubkey)} OP_EQUALVERIFY OP_CHECKSIG
-function p2pkh(a, opts) {
-  if (!a.address && !a.hash && !a.output && !a.pubkey && !a.input)
+// output: OP_CLAIM_NAME {claim_name} {claim} OP_2DROP OP_DROP OP_DUP OP_HASH160 {hash160(pubkey)} OP_EQUALVERIFY OP_CHECKSIG
+function claimName(a, opts) {
+  if (
+    !a.address &&
+    !a.hash &&
+    !a.output &&
+    !a.pubkey &&
+    !a.input &&
+    !a.claim &&
+    !a.claimName
+  )
     throw new TypeError('Not enough data');
   opts = Object.assign({ validate: true }, opts || {});
   (0, types_1.typeforce)(
@@ -19,10 +28,12 @@ function p2pkh(a, opts) {
       network: types_1.typeforce.maybe(types_1.typeforce.Object),
       address: types_1.typeforce.maybe(types_1.typeforce.String),
       hash: types_1.typeforce.maybe(types_1.typeforce.BufferN(20)),
-      output: types_1.typeforce.maybe(types_1.typeforce.BufferN(25)),
+      output: types_1.typeforce.maybe(types_1.typeforce.Buffer),
       pubkey: types_1.typeforce.maybe(types_1.isPoint),
       signature: types_1.typeforce.maybe(bscript.isCanonicalScriptSignature),
       input: types_1.typeforce.maybe(types_1.typeforce.Buffer),
+      claimName: types_1.typeforce.maybe(types_1.typeforce.String),
+      claim: types_1.typeforce.maybe(types_1.typeforce.Buffer),
     },
     a,
   );
@@ -35,8 +46,13 @@ function p2pkh(a, opts) {
   const _chunks = lazy.value(() => {
     return bscript.decompile(a.input);
   });
+  // We need output chunks as well, we can't just go by byte location within
+  // the output, because claim and claimName are of variable length.
+  const _outputChunks = lazy.value(() => {
+    return bscript.decompile(a.output);
+  });
   const network = a.network || networks_1.mainnet;
-  const o = { name: 'p2pkh', network };
+  const o = { name: 'claim_name', network };
   lazy.prop(o, 'address', () => {
     if (!o.hash) return;
     const payload = Buffer.allocUnsafe(21);
@@ -45,13 +61,28 @@ function p2pkh(a, opts) {
     return bs58check.encode(payload);
   });
   lazy.prop(o, 'hash', () => {
-    if (a.output) return a.output.slice(3, 23);
+    if (a.output) return _outputChunks()[7];
     if (a.address) return _address().hash;
     if (a.pubkey || o.pubkey) return bcrypto.hash160(a.pubkey || o.pubkey);
   });
+  lazy.prop(o, 'claim', () => {
+    if (a.output) return _outputChunks()[2];
+    if (a.claim) return a.claim;
+  });
+  lazy.prop(o, 'claimName', () => {
+    if (a.output) return _outputChunks()[1].toString();
+    if (a.claimName) return a.claimName;
+  });
   lazy.prop(o, 'output', () => {
     if (!o.hash) return;
+    if (!o.claimName) return;
+    if (!o.claim) return;
     return bscript.compile([
+      OPS.OP_CLAIM_NAME,
+      Buffer.from(o.claimName),
+      o.claim,
+      OPS.OP_2DROP,
+      OPS.OP_DROP,
       OPS.OP_DUP,
       OPS.OP_HASH160,
       o.hash,
@@ -92,18 +123,34 @@ function p2pkh(a, opts) {
     }
     if (a.output) {
       if (
-        a.output.length !== 25 ||
-        a.output[0] !== OPS.OP_DUP ||
-        a.output[1] !== OPS.OP_HASH160 ||
-        a.output[2] !== 0x14 ||
-        a.output[23] !== OPS.OP_EQUALVERIFY ||
-        a.output[24] !== OPS.OP_CHECKSIG
+        _outputChunks().length !== 10 ||
+        _outputChunks()[0] !== OPS.OP_CLAIM_NAME ||
+        !Buffer.isBuffer(_outputChunks()[1]) ||
+        !Buffer.isBuffer(_outputChunks()[2]) ||
+        _outputChunks()[3] !== OPS.OP_2DROP ||
+        _outputChunks()[4] !== OPS.OP_DROP ||
+        _outputChunks()[5] !== OPS.OP_DUP ||
+        _outputChunks()[6] !== OPS.OP_HASH160 ||
+        !Buffer.isBuffer(_outputChunks()[7]) ||
+        _outputChunks()[7].length !== 0x14 ||
+        _outputChunks()[8] !== OPS.OP_EQUALVERIFY ||
+        _outputChunks()[9] !== OPS.OP_CHECKSIG
       )
         throw new TypeError('Output is invalid');
-      const hash2 = a.output.slice(3, 23);
+      const hash2 = _outputChunks()[7];
       if (hash.length > 0 && !hash.equals(hash2))
         throw new TypeError('Hash mismatch');
       else hash = hash2;
+      const claimName2 = _outputChunks()[1].toString();
+      if (a.claimName && a.claimName !== claimName2)
+        throw new TypeError('claimName mismatch');
+      const claim2 = _outputChunks()[2];
+      if (
+        Buffer.isBuffer(a.claim) &&
+        a.claim.length > 0 &&
+        !a.claim.equals(claim2)
+      )
+        throw new TypeError('claim mismatch');
     }
     if (a.pubkey) {
       const pkh = bcrypto.hash160(a.pubkey);
@@ -129,4 +176,4 @@ function p2pkh(a, opts) {
   }
   return Object.assign(o, a);
 }
-exports.p2pkh = p2pkh;
+exports.claimName = claimName;

@@ -6,6 +6,7 @@ import { p2pkh } from './p2pkh';
 import { p2sh } from './p2sh';
 import { p2wpkh } from './p2wpkh';
 import { p2wsh } from './p2wsh';
+import { claimName } from './claim_name';
 
 export interface Payment {
   name?: string;
@@ -23,6 +24,8 @@ export interface Payment {
   hash?: Buffer;
   redeem?: Payment;
   witness?: Buffer[];
+  claim?: Buffer;
+  claimName?: string;
 }
 
 export type PaymentCreator = (a: Payment, opts?: PaymentOpts) => Payment;
@@ -38,7 +41,7 @@ export type StackElement = Buffer | number;
 export type Stack = StackElement[];
 export type StackFunction = () => Stack;
 
-export { embed, p2ms, p2pk, p2pkh, p2sh, p2wpkh, p2wsh };
+export { embed, p2ms, p2pk, p2pkh, p2sh, p2wpkh, p2wsh, claimName };
 
 // TODO
 // witness commitment

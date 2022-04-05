@@ -1,6 +1,6 @@
 'use strict';
 Object.defineProperty(exports, '__esModule', { value: true });
-exports.p2wsh = exports.p2wpkh = exports.p2sh = exports.p2pkh = exports.p2pk = exports.p2ms = exports.embed = void 0;
+exports.claimName = exports.p2wsh = exports.p2wpkh = exports.p2sh = exports.p2pkh = exports.p2pk = exports.p2ms = exports.embed = void 0;
 const embed_1 = require('./embed');
 Object.defineProperty(exports, 'embed', {
   enumerable: true,
@@ -48,6 +48,13 @@ Object.defineProperty(exports, 'p2wsh', {
   enumerable: true,
   get: function() {
     return p2wsh_1.p2wsh;
+  },
+});
+const claim_name_1 = require('./claim_name');
+Object.defineProperty(exports, 'claimName', {
+  enumerable: true,
+  get: function() {
+    return claim_name_1.claimName;
   },
 });
 // TODO
