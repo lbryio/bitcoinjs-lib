@@ -3,8 +3,9 @@ import * as crypto from './crypto';
 import * as networks from './networks';
 import * as payments from './payments';
 import * as script from './script';
+import * as bip32Lbry from './bip32_lbry';
 
-export { address, crypto, networks, payments, script };
+export { address, bip32Lbry, crypto, networks, payments, script };
 
 export { Block } from './block';
 export { TaggedHashPrefix } from './crypto';
